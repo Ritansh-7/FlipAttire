@@ -1,122 +1,222 @@
 # FlipAttire
 
-An open-source fashion recommendation and experimentation platform. FlipAttire uses H&M-format catalog data for its local demo.
+### Fashion discovery, personalized recommendations, and experimentation — in one platform.
 
-## First milestone
+[![CI](https://github.com/Ritansh-7/FlipAttire/actions/workflows/ci.yml/badge.svg)](https://github.com/Ritansh-7/FlipAttire/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-- Deterministic customer-level A/B assignment
-- Popularity baseline recommendations
-- Personalized recommendations using popularity, department affinity, weighted recent shopper actions, color affinity, and similar-item signals
-- Eligibility and diversity policies
-- Recommendation exposure logging
-- FastAPI service with health, recommendation, and event endpoints
+FlipAttire is a production-minded fashion recommendation and experimentation platform for a realistic retail workflow. It combines a FastAPI recommendation service, Next.js storefront, Streamlit apps, event tracking, A/B experimentation, Spark pipelines, and observability tooling.
 
-## Run locally
+> **The idea:** every shopper should see a more relevant, more diverse, and more measurable product experience.
+
+---
+
+## Why FlipAttire stands out
+
+| Capability | What it delivers |
+| --- | --- |
+| **Personalized ranking** | Blends popularity, department affinity, recent actions, colour affinity, and similar-item signals. |
+| **Experiment-ready by design** | Stable customer-level A/B assignment keeps control and treatment comparisons trustworthy. |
+| **Production-style event loop** | Captures impressions, views, clicks, carts, purchases, and returns through one event interface. |
+| **Fast serving** | FastAPI endpoints with compact columnar customer profiles and local serving. |
+| **Retail analytics** | Seven-day attribution windows and exposure-aware conversion reporting. |
+| **Full-stack demo** | Storefront, operations console, REST API, Spark, Kafka, Prometheus, and Grafana. |
+| **Practical engineering** | Docker Compose, Windows launchers, automated tests, and GitHub Actions CI. |
+
+## Product flow
+
+1. A shopper browses the storefront.
+2. The recommender assigns a stable experiment variant.
+3. Products are ranked using the baseline or personalized strategy.
+4. Impressions and downstream actions are recorded.
+5. The operations console exposes live activity and experiment results.
+6. New ranking ideas can be evaluated with time-based holdouts.
+
+## Architecture
+
+```text
+                         +----------------------+
+                         |  Next.js storefront  |
+                         +----------+-----------+
+                                    |
+                         +----------v-----------+
+                         | FastAPI recommender  |
+                         | ranking + experiments|
+                         +----+------------+----+
+                              |            |
+                     events   |            | metrics
+                              v            v
+                    +---------+--+   +-----+---------+
+                    | Kafka / log |   | Prometheus    |
+                    +------------+   | + Grafana     |
+                                     +---------------+
+
+        H&M-format data -> Spark ingest -> artifacts -> serving snapshots
+        Streamlit customer app + Streamlit operations console
+```
+
+## Recommendation engine highlights
+
+- **Control arm:** popularity-ranked recommendations for an interpretable baseline.
+- **`hybrid_v2` treatment:** combines popularity with recent shopper feedback, department affinity, colour affinity, and similar-item signals.
+- **Diversity and eligibility rules:** avoids unavailable or already-purchased items and reduces repetitive results.
+- **Stable assignment:** the same customer remains in the same experiment variant.
+- **Exposure-aware attribution:** actions count only after a matching customer/product exposure within seven days.
+- **Leakage-aware evaluation:** offline evaluation uses an earlier training window and a later time-based holdout.
+
+## Quick start: API
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -e .
+python -m pip install -e .
 uvicorn hm_recommender.api:app --reload
 ```
 
-Open `http://127.0.0.1:8000/docs` for the API explorer.
+Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for the interactive API explorer.
 
-## API examples
+Try a recommendation:
 
 ```powershell
 Invoke-RestMethod "http://127.0.0.1:8000/v1/recommendations?customer_id=C001&surface=homepage&limit=5"
-Invoke-RestMethod -Method Post -ContentType "application/json" -Body '{"event_type":"click","customer_id":"C001","article_id":"A001","surface":"homepage"}' -Uri "http://127.0.0.1:8000/v1/events"
 ```
 
-The built-in fallback data is intentionally small and synthetic. The repository also includes a local H&M-format Parquet ingestion and model-artifact workflow. Online API state is still primarily in memory; PostgreSQL and ClickHouse schemas are starting points, not yet the API's backing stores. The serving process keeps customer top-department profiles in a compact, sorted columnar index and looks them up without copying the 1.3M-customer pool into Python dictionaries/lists. Hybrid ranking scores use log-scaled signals so high-volume popularity counts do not automatically swamp a shopper's recent interests, with stronger and more recent actions receiving more weight. The control arm remains popularity-only. The updated treatment runs as `hybrid_v2` in a new experiment ID so results from the earlier algorithm are not combined with it; customer assignment remains stable within each experiment. The experimental bandit selector is diagnostic-only and does not route live recommendation traffic.
+Record an event:
 
-## Ingest the provided H&M files
+```powershell
+Invoke-RestMethod `
+  -Method Post `
+  -ContentType "application/json" `
+  -Body '{"event_type":"click","customer_id":"C001","article_id":"A001","surface":"homepage"}' `
+  -Uri "http://127.0.0.1:8000/v1/events"
+```
+
+## Run the Streamlit applications
+
+Install UI dependencies:
+
+```powershell
+python -m pip install -e ".[ui]"
+```
+
+Run in separate terminals:
+
+```powershell
+.\run_user_streamlit.ps1   # customer experience: http://localhost:8501
+.\run_admin_streamlit.ps1  # operations console: http://localhost:8502
+```
+
+The customer app supports browsing, recommendations, impressions, clicks, carts, purchases, and returns. The operations console shows live events, A/B metrics, evaluation status, Kafka UI, Prometheus, and Grafana links.
+
+## Run the Next.js storefront
+
+The storefront lives in [`my-clothing-store/`](my-clothing-store/).
+
+```powershell
+cd my-clothing-store
+Copy-Item .env.template .env.local
+corepack enable
+yarn install
+yarn dev
+```
+
+The storefront expects a running Medusa backend. Configure `.env.local`; never commit that file or API keys.
+
+## Data and model pipeline
+
+FlipAttire supports H&M-format catalog files and a Spark workflow:
 
 ```powershell
 spark-submit scripts/spark_ingest_hm.py `
-  --transactions "C:\Users\ritan\OneDrive\Desktop\New folder\Downloads\transactions_train.csv.zip" `
-  --customers "C:\Users\ritan\OneDrive\Desktop\New folder\Downloads\customers.csv.zip" `
-  --articles "C:\Users\ritan\OneDrive\Desktop\New folder\Downloads\articles.csv.zip"
-```
+  --transactions "C:\path\to\transactions_train.csv.zip" `
+  --customers "C:\path\to\customers.csv.zip" `
+  --articles "C:\path\to\articles.csv.zip"
 
-The ZIP is staged, then Spark reads, casts, partitions, and writes the tables under `data/bronze/`. For a cluster, replace `--master local[*]` with the Spark cluster master URL.
-
-## Build serving artifacts and evaluate the popularity baseline
-
-```powershell
 spark-submit --conf spark.driver.memory=4g scripts/spark_train.py
 spark-submit --conf spark.driver.memory=4g scripts/spark_evaluate.py
 ```
 
-`spark_train.py` builds serving snapshots from all available transaction history. `spark_evaluate.py` separately uses an earlier training window and a recent time-based holdout to measure the global-popularity baseline; it reports macro Recall@K, Precision@K, and hit rate for customers' novel purchases. This evaluator does not yet compare the personalized hybrid model, so `hybrid_v2` is an improved ranking hypothesis, not a proven offline or online uplift. The API does not present online event logs as offline ranking metrics because they are not a leakage-safe holdout.
+The evaluator reports macro Recall@K, Precision@K, and hit rate on a time-based holdout. The personalized strategy remains a ranking hypothesis until validated against a leakage-safe comparison.
 
-`train_baseline.py` and `evaluate_baseline.py` remain as lightweight Polars utilities for local artifact inspection. The authoritative ingestion, training, and evaluation path is PySpark.
-
-For a containerized Spark batch runner, build `Dockerfile.spark`; it includes Java 17 and the PySpark runtime. The API image intentionally does not install Spark because serving and distributed batch processing are separate production workloads.
-
-### Windows D-drive Spark environment
+For Windows D-drive setups:
 
 ```powershell
 . .\scripts\set_spark_env.ps1
-spark-submit.cmd --master local[*] --conf spark.driver.memory=4g scripts/spark_ingest_hm.py ...
-spark-submit.cmd --master local[*] --conf spark.driver.memory=4g scripts/spark_train.py
-spark-submit.cmd --master local[*] --conf spark.driver.memory=4g scripts/spark_evaluate.py
 ```
 
-The source ZIPs can remain read-only on C:. All installation, staging, temporary Spark files, Parquet outputs, and model artifacts are on D:.
-
-## Start the local production-like infrastructure
+## Local infrastructure
 
 ```powershell
 docker compose up -d
 ```
 
-The default stack starts only the recommender API and Kafka. Kafka UI, the unconnected data-service prototypes (PostgreSQL, ClickHouse, Redis, Qdrant, MinIO, and MLflow), and Prometheus/Grafana are opt-in so a normal local run uses fewer containers and less memory.
-
-Start optional services only when you need them:
+Optional services:
 
 ```powershell
 docker compose --profile event-streaming-ui --profile observability up -d
 docker compose --profile data-services up -d
 ```
 
-The application remains independently deployable; Feast, KServe, Airflow, and GrowthBook are future integrations, not requirements for the local app.
-
-For Kafka publishing, install the production extra and set `KAFKA_BOOTSTRAP_SERVERS`. Without Kafka configured, the API uses a no-op bus for local tests while retaining the same event interface. The A/B report attributes clicks, cart additions, and purchases to the same customer/product impression and variant within a seven-day window. Its two-arm significance test excludes customers exposed to multiple variants and is suppressed for multi-treatment experiments. This remains a local prototype report and is not a substitute for durable, audited production experiment analytics.
-
-In Docker Compose, containers connect to Kafka at `kafka:9092`; host processes connect at `localhost:9094`. The Compose recommender is configured to load the `hm_spark_v1` artifacts produced by the Spark scripts.
-
-## Two live Streamlit applications
-
-Run the customer storefront and operations console in separate terminals:
-
-```powershell
-.\run_user_streamlit.ps1   # http://localhost:8501
-.\run_admin_streamlit.ps1  # http://localhost:8502
-```
-
-The user app provides category browsing, local product visuals, recommendations, impressions, clicks, cart, purchase and return events. The admin app reads the shared durable event log at `data/events/events.jsonl` and displays live events, A/B metrics, model evaluation status, Kafka UI, Prometheus and Grafana links.
-
-Start the technical services with:
-
-```powershell
-docker compose --profile event-streaming-ui --profile observability up -d kafka kafka-ui prometheus grafana
-```
-
-The launchers force Streamlit, Python, Spark and pip temporary/cache paths to `D:\gt`; they also disable usage-stat collection and cap BLAS threads to prevent C: drive growth and OpenBLAS memory exhaustion.
-
-## Native Windows observability stack (no Docker)
+Native Windows observability is available without Docker:
 
 ```powershell
 .\start_native_stack.ps1
 ```
 
-This starts Kafka/KRaft, Redpanda Console, Prometheus, Grafana, and the FastAPI metrics endpoint using only binaries under `D:\gt\tools` and data under `D:\gt\data`:
+| Service | URL |
+| --- | --- |
+| API docs | `http://localhost:8000/docs` |
+| API metrics | `http://localhost:8000/metrics` |
+| Kafka UI | `http://localhost:8080` |
+| Prometheus | `http://localhost:9090` |
+| Grafana | `http://localhost:3000` |
 
-- Kafka UI: `http://localhost:8080`
-- Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000` (`admin` / `hmadmin`)
-- API metrics: `http://localhost:8000/metrics`
+Stop the native stack with `.\stop_native_stack.ps1`.
 
-Stop everything with `.\stop_native_stack.ps1`. The first Kafka start formats a single-node KRaft data directory under `D:\gt\data\kafka-logs`.
+## Quality gates
+
+GitHub Actions runs on pushes to `main` and on pull requests:
+
+- Python package installation and `pytest` suite
+- Next.js dependency installation
+- TypeScript type-checking
+
+Run the core checks locally:
+
+```powershell
+python -m pytest -q tests
+cd my-clothing-store
+corepack yarn tsc --noEmit
+```
+
+The full Next.js production build requires a reachable Medusa backend because some pages fetch catalog data during static generation.
+
+## Project structure
+
+```text
+FlipAttire/
+├── src/hm_recommender/       # recommendation, experiments, events, API
+├── tests/                    # automated Python tests
+├── my-clothing-store/       # Next.js storefront
+├── app_pages/                # Streamlit pages
+├── scripts/                  # ingestion, training, evaluation
+├── infra/                    # Kafka, Prometheus, Grafana, SQL
+├── docker-compose.yml        # local production-like stack
+└── .github/workflows/        # CI automation
+```
+
+## Current scope
+
+FlipAttire is a strong local prototype and experimentation foundation. The API currently serves primarily from memory; PostgreSQL and ClickHouse schemas are integration starting points. Durable event storage, production feature serving, orchestration, and automated deployment are natural next steps.
+
+## Security note
+
+Secrets, generated service data, caches, build output, downloads, and user/account data are intentionally excluded from Git. Use environment variables or a secrets manager for API keys and credentials.
+
+## License
+
+This project is released under the [MIT License](LICENSE).
+
