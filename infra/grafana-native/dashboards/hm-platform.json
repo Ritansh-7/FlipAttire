@@ -1,0 +1,23 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"fieldConfig":{"defaults":{"unit":"reqps"},"overrides":[]},"gridPos":{"h":8,"w":12,"x":0,"y":0},"id":1,"targets":[{"expr":"sum(rate(hm_recommendation_requests_total[5m]))","legendFormat":"recommendation requests/sec","refId":"A"}],"title":"Recommendation traffic","type":"timeseries"},
+    {"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":8,"w":12,"x":12,"y":0},"id":2,"targets":[{"expr":"sum by (event_type) (hm_customer_events_total)","legendFormat":"{{event_type}}","refId":"A"}],"title":"Customer events","type":"timeseries"},
+    {"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":7,"w":8,"x":0,"y":8},"id":3,"targets":[{"expr":"hm_catalog_articles","legendFormat":"articles","refId":"A"}],"title":"Catalog availability","type":"stat"},
+    {"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"gridPos":{"h":7,"w":8,"x":8,"y":8},"id":4,"targets":[{"expr":"up{job=\"hm-recommender-api\"}","legendFormat":"API","refId":"A"}],"title":"API health","type":"stat"},
+    {"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"fieldConfig":{"defaults":{"unit":"percentunit"},"overrides":[]},"gridPos":{"h":7,"w":8,"x":16,"y":8},"id":5,"targets":[{"expr":"(sum(increase(hm_customer_events_total{event_type=\"click\"}[6h])) or vector(0)) / clamp_min((sum(increase(hm_customer_events_total{event_type=\"impression\"}[6h])) or vector(0)), 1)","legendFormat":"CTR (clicks ÷ impressions, 6h)","refId":"A"}],"title":"Combined CTR (6h)","description":"Clicks divided by impressions over the selected six-hour window. Returns 0% when there are impressions but no clicks, instead of displaying No data.","type":"stat"},
+    {"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"fieldConfig":{"defaults":{"unit":"percentunit"},"overrides":[]},"gridPos":{"h":7,"w":12,"x":0,"y":15},"id":6,"targets":[{"expr":"(sum(rate(hm_customer_events_total{event_type=\"click\"}[15m])) or vector(0)) / clamp_min((sum(rate(hm_customer_events_total{event_type=\"impression\"}[15m])) or vector(0)), 1)","legendFormat":"CTR live (15m)","refId":"A"}],"title":"CTR live (15m)","description":"Clicks divided by impressions in the recent fifteen-minute window. Displays 0% when there are no clicks; use the A/B panel for experiment decisions.","type":"timeseries"},
+    {"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"fieldConfig":{"defaults":{"unit":"percentunit"},"overrides":[]},"gridPos":{"h":7,"w":12,"x":12,"y":15},"id":7,"targets":[{"expr":"(sum by (variant) (increase(hm_customer_events_total{event_type=\"click\",variant!=\"unknown\"}[6h])) or (sum by (variant) (increase(hm_customer_events_total{event_type=\"impression\",variant!=\"unknown\"}[6h])) * 0)) / clamp_min(sum by (variant) (increase(hm_customer_events_total{event_type=\"impression\",variant!=\"unknown\"}[6h])), 1)","legendFormat":"CTR {{variant}} (6h)","refId":"A"}],"title":"CTR by variant (6h)","description":"Attributed clicks divided by impressions for each known experiment variant. Missing click samples are filled with zero so an active variant remains visible at 0%.","type":"timeseries"}
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["hm", "recommendations", "ab-testing"],
+  "templating": {"list": [{"name":"DS_PROMETHEUS","label":"Prometheus","type":"datasource","query":"prometheus","current":{"text":"H&M Prometheus","value":"PD676B4785C401ADF"}}]},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "title": "H&M Recommendation Platform",
+  "uid": "hm-recommendation-platform",
+  "version": 1
+}

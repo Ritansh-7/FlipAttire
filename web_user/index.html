@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>H&M style lab · Personal edit</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="modal.css"><link rel="stylesheet" href="bag.css"><link rel="stylesheet" href="checkout.css">
+</head>
+<body>
+  <div class="announcement">Free delivery over ₹1,999 · Personalised for your style</div>
+  <header class="site-header">
+    <button class="icon-button mobile-menu" aria-label="Open menu">☰</button>
+    <a class="logo" href="#top">H&amp;M <span>style lab</span></a>
+    <nav class="main-nav" aria-label="Main navigation"><a href="#edit">New arrivals</a><a href="#edit">Ladies</a><a href="#edit">Men</a><a href="#edit">Kids</a><a href="#edit">Home</a></nav>
+    <div class="header-actions"><label class="search-box"><span>⌕</span><input id="search" type="search" placeholder="Search the edit" aria-label="Search the edit"></label><button class="icon-button" aria-label="Account">♙</button><button class="icon-button bag-button" aria-label="Shopping bag">♧<b id="bag-count">0</b></button></div>
+  </header>
+  <main id="top">
+    <section class="hero"><div class="hero-copy"><p class="kicker">Your personalised edit</p><h1>Wear what<br><em>feels like you.</em></h1><p class="hero-text">A calm, considered selection built from your taste profile and what you choose next.</p><a class="hero-cta" href="#edit">Shop the edit <span>→</span></a></div><div class="hero-art" aria-label="Seasonal fashion edit"><div class="art-circle"></div><div class="art-shape dress-shape"></div><div class="art-shape bag-shape"></div><span>NEW SEASON<br><strong>2026</strong></span></div></section>
+    <section class="trust-row"><div><strong id="experiment-name">PERSONALISED</strong><span>Live recommendation experiment</span></div><div><strong>CURATED</strong><span>Made for your wardrobe</span></div><div><strong>LIVE</strong><span>Every choice teaches the edit</span></div></section>
+    <section class="edit-section" id="edit"><div class="section-heading"><div><p class="kicker">Selected for you</p><h2>Your next favourites</h2></div><div class="customer-control"><label for="customer-id">Customer ID</label><input id="customer-id" value="00000dbacae5abe5e23885899a1fa44253a17956c6d1c3d2f588aa139fdfc657"><button id="refresh" class="small-button">Refresh edit</button></div></div>
+      <div class="category-row" role="group" aria-label="Filter products"><button class="category active" data-category="All">All</button><button class="category" data-category="T-shirts &amp; tops">Tops</button><button class="category" data-category="Trousers &amp; bottoms">Bottoms</button><button class="category" data-category="Dresses">Dresses</button><button class="category" data-category="Jackets &amp; layers">Layers</button><button class="category" data-category="Shoes">Shoes</button><button class="category" data-category="Accessories">Accessories</button></div>
+      <div class="status-line"><span id="status">Loading your edit…</span><span id="variant"></span></div><div id="product-grid" class="product-grid" aria-live="polite"></div>
+    </section>
+    <section class="story-band"><div><p class="kicker">The style signal</p><h2>Every save, click and view shapes what comes next.</h2></div><p>Your experience is measured with a clean experiment layer, so personalisation stays useful, transparent and responsible.</p></section>
+  </main><div id="toast" class="toast" role="status"></div><div id="product-modal" class="modal" aria-hidden="true"><div class="modal-backdrop" data-close="true"></div><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button class="modal-close" data-close="true" aria-label="Close product details">×</button><div id="modal-content"></div></section></div><aside id="bag-drawer" class="bag-drawer" aria-hidden="true"><div class="bag-head"><h2>Your bag</h2><button class="modal-close" data-bag-close="true" aria-label="Close bag">×</button></div><div id="bag-items" class="bag-items"></div><div class="bag-foot"><div><span>Subtotal</span><strong id="bag-total">₹0</strong></div><button class="modal-action" id="checkout">Continue to checkout</button></div></aside><div id="checkout-modal" class="checkout-modal" aria-hidden="true"><div class="checkout-backdrop" data-checkout-close="true"></div><section class="checkout-card"><button class="modal-close" data-checkout-close="true" aria-label="Close checkout">×</button><p class="kicker">Secure demo checkout</p><h2>Complete your order</h2><form id="checkout-form"><label>Full name<input required name="name" placeholder="Your name"></label><label>Delivery address<textarea required name="address" placeholder="House, street, city"></textarea></label><label>Payment method<select name="payment"><option>UPI</option><option>Card</option><option>Cash on delivery</option></select></label><button class="modal-action" type="submit">Pay and place order</button></form><p class="checkout-note">Demo payment flow · no real charge is made.</p></section></div><script src="app.js"></script>
+</body>
+</html>

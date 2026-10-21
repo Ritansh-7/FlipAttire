@@ -1,0 +1,10 @@
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+port = 8501
+maxUploadSize = 50
+
+[global]
+developmentMode = false

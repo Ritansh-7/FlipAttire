@@ -1,0 +1,14 @@
+topics:
+  recommendation-impressions:
+    partitions: 12
+    retention_days: 90
+  customer-events:
+    partitions: 24
+    retention_days: 180
+  inventory-events:
+    partitions: 12
+    retention_days: 30
+  experiment-assignments:
+    partitions: 12
+    retention_days: 365
+

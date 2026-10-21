@@ -1,0 +1,51 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.template
+
+# Python packaging and local runtime output
+*.egg-info/
+build/
+dist/
+downloads/
+logs/
+*.log
+tmp/
+cache/
+
+# Local services and generated data
+data/
+
+# Downloaded tools/binaries and local backup snapshots
+tools/
+tracking-fix-backup-*/
+
+# Editors and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Frontend dependencies and build output
+my-clothing-store/node_modules/
+my-clothing-store/.next/
+my-clothing-store/out/
+my-clothing-store/build/
+my-clothing-store/.yarn/install-state.gz
+my-clothing-store/*.tsbuildinfo
+
+data/bronze/
+data/silver/
+data/gold/
+models/artifacts/
+mlruns/
+

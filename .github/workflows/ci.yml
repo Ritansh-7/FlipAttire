@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python-tests:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install "pytest>=8,<9"
+
+      - name: Run Python tests
+        run: python -m pytest -q tests
+
+  storefront:
+    name: Storefront checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: my-clothing-store
+    env:
+      MEDUSA_BACKEND_URL: http://localhost:9000
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ci-placeholder
+      NEXT_PUBLIC_BASE_URL: http://localhost:8000
+      NEXT_PUBLIC_DEFAULT_REGION: us
+      NEXT_PUBLIC_STRIPE_KEY: pk_test_placeholder
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: yarn
+          cache-dependency-path: my-clothing-store/yarn.lock
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install storefront dependencies
+        run: yarn install --immutable
+
+      - name: Type-check storefront
+        run: yarn tsc --noEmit
+

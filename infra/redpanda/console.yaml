@@ -1,0 +1,10 @@
+kafka:
+  brokers:
+    - 127.0.0.1:9092
+  sasl:
+    enabled: false
+server:
+  listenAddress: 127.0.0.1
+  listenPort: 8080
+logger:
+  level: info

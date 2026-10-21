@@ -1,0 +1,11 @@
+apiVersion: 1
+providers:
+  - name: H&M dashboards
+    orgId: 1
+    folder: H&M Recommendation Platform
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: D:/gt/infra/grafana-native/dashboards
